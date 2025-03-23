@@ -1,0 +1,50 @@
+---
+title: "ABA_enrichment_SFARI"
+author: "Catriona Miller"
+date: "2024-09-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ABAEnrichment)
+```
+
+```{r}
+# find enriched brain regions with 1000 random sets to compare and controlling for gene length
+# female
+female_sig = read.csv('female_sig_SFARI_genes_incX.txt',header = FALSE)
+female_sig_in = data.frame(female_sig, is_candidate=1)
+res_female_devel = aba_enrich(female_sig_in, dataset='dev_effect', cutoff_quantiles=0.8, n_randsets=1000, gene_len = TRUE)
+res_female = aba_enrich(female_sig_in, dataset='adult', cutoff_quantiles=0.8, n_randsets=1000, gene_len = TRUE)
+res_female_5stage = aba_enrich(female_sig_in, dataset='5_stages', cutoff_quantiles=0.8, n_randsets=1000, gene_len = TRUE)
+```
+
+```{r}
+# same but male
+male_sig = read.csv('male_sig_SFARI_genes_incX.txt',header = FALSE)
+set.seed(10)
+
+male_vector <- male_sig[[1]]
+female_length <- length(female_sig[[1]])
+# Randomly sample male_vector to match the length of female_vector
+sampled_male_sig <- sample(male_vector, female_length, replace = FALSE)
+
+male_sig_in = data.frame(sampled_male_sig, is_candidate=1)
+res_male_devel = aba_enrich(male_sig_in, dataset='dev_effect', cutoff_quantiles=0.8, n_randsets=1000, gene_len = TRUE)
+res_male = aba_enrich(male_sig_in, dataset='adult', cutoff_quantiles=0.8, n_randsets=1000, gene_len = TRUE)
+res_male_5stages = aba_enrich(male_sig_in, dataset='5_stages', cutoff_quantiles=0.8, n_randsets=1000, gene_len = TRUE)
+```
+
+
+```{r}
+# both male and female
+all_sig = read.csv('all_sig_SFARI_genes.txt',header = FALSE)
+all_sig_in = data.frame(all_sig, is_candidate=1)
+res_all_devel = aba_enrich(all_sig_in, dataset='dev_effect', cutoff_quantiles=0.8, n_randsets=1000, gene_len = TRUE)
+res_all = aba_enrich(all_sig_in, dataset='adult', cutoff_quantiles=0.8, n_randsets=1000, gene_len = TRUE)
+res_all_5stages = aba_enrich(all_sig_in, dataset='5_stages', cutoff_quantiles=0.8, n_randsets=1000, gene_len = TRUE)
+```
