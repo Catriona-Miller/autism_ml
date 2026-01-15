@@ -1,0 +1,32 @@
+---
+title: "Quality_control"
+author: "Catriona Miller"
+date: '2023-05-17'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+het_file <- read.csv("plink.het", sep="")
+mean_F <- mean(het_file$F)
+sd_F <- sd(het_file$F)
+outliers <- subset(het_file, F < (mean_F - 3*sd_F) | F > (mean_F + 3*sd_F))
+write.csv(outliers, file='het_outliers.csv')
+```
+
+```{r}
+genome_file <- read.csv("plink.genome", sep="")
+```
+
+```{r}
+eigenvec <- read.csv("plink.eigenvec",sep="",header=F)
+PC12 <- eigenvec[,c(3,4)]
+eigenvec$dist <- mahalanobis(PC12,colMeans(PC12),cov(PC12))
+eigenvec$pval <- pchisq(eigenvec$dist, df=1, lower.tail = FALSE)
+PCoutliers <- subset(eigenvec, pval < 0.001)
+write.csv(PCoutliers, file="PCA_outliers.csv")
+```
+

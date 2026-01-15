@@ -1,0 +1,19 @@
+# after merging files into one vcf
+plink --vcf all_CG_annotation.vcf.gz --geno 0.05 --hwe 1e-6 --maf 0.01 --make-bed --out all_CG_annotation_QC1 --allow-extra-chr 0
+# Total genotyping rate is 0.999531. 653476 variants removed due to missing genotype data. 2209829 variants removed due to Hardy-Weinberg exact test. 210128871 variants removed due to minor allele threshold(s). 10618187 variants and 1739 people pass filters and QC
+plink --bfile all_CG_annotation_QC1 --not-chr 0, 25, 26 --make-bed --out all_CG_annotation_QC1_chrom
+plink --bfile all_CG_annotation_QC1_chrom --keep-allele-order --update-sex sex_data.txt --make-bed --out all_CG_annotation_QC1_chrom_sex
+# 8/1739 left as ambiguous
+plink --bfile all_CG_annotation_QC1_chrom_sex --mind 0.05 --make-bed --out all_CG_annotation_QC2
+# everyone passed
+plink --bfile all_CG_annotation_QC2 --het
+# Used R (see Quality_control.Rmd) to find those individuals who were +/- 3std from mean. There were 39 individuals to remove. 
+plink --bfile all_CG_annotation_QC2 --remove het_remove.txt --make-bed --out all_CG_annotation_QC3
+plink --bfile all_CG_annotation_QC3 --pca var-wts
+# Used R (see Quality_control.Rmd) to find outliers with Mahalanobis distance. There were 78 individuals to remove.
+plink --bfile all_CG_annotation_QC3 --remove PCA_remove.txt --make-bed --out all_CG_annotation_QC4
+plink --bfile all_CG_annotation_QC4 --rel-cutoff 0.5
+# 91 individuals removed
+plink --bfile all_CG_annotation_QC4 --keep plink.rel.id --make-bed --out all_CG_annotation_QC5
+plink --bfile all_CG_annotation_QC5 --make-pheno affection.txt 2 --make-bed --out all_CG_annotation_pheno
+# 610 cases, 920 controls (3 missing phenotypes)
